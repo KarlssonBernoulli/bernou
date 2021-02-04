@@ -2,20 +2,7 @@ public class Car
     {
         public long Id {get;set;}
         public string Name {get;set;}
-        public DateTime DateTime {get;set;}
-        public bool IsSet {get;set;}
-        public long GroupId {get; set;}
-        public Group Group {get; set;}
-
-        public ICollection<CarTyreMapping> TyreHistoryMappings {get;set;}
     } 
-
-
-public class MyProjection
-    {
-        public Car Car { get; set; }
-        public Tyre Tyre { get; set; }
-    }
 
     public static class CarExtensions
     {
@@ -31,36 +18,19 @@ public class MyProjection
         }
     }
 
-
     public class Linq2DbPlayground
     {
         public void Start()
         {
             var context = new DataConnection(new SQLiteDataProvider(ProviderName.SQLiteClassic), "Data Source=:memory:");
             context.CreateTable<Car>();
-
-
             var fluentMappingBuilder = context.MappingSchema.GetFluentMappingBuilder();
-
-
             var carBuilder = fluentMappingBuilder.Entity<Car>();
             carBuilder.Property(x => x.Id).IsPrimaryKey();
-            carBuilder.Association(x => x.Group, x => x.GroupId, x => x.Id);
-
-
-            context.Insert(new Car { Id = 1, Name = "MyCar", IsSet = true });
-
-
             var carTable = context.GetTable<Car>();
-
 
             var query = carTable.Where(x => x.FilterBySpecialString(null)).ToList();
 
             var lastQuery = context.LastQuery;
-
-
-
-
-
         }
     }
