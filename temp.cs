@@ -1,4 +1,4 @@
-public class Car
+    public class Car
     {
         public long Id {get;set;}
         public string Name {get;set;}
@@ -22,15 +22,41 @@ public class Car
     {
         public void Start()
         {
-            var context = new DataConnection(new SQLiteDataProvider(ProviderName.SQLiteClassic), "Data Source=:memory:");
-            context.CreateTable<Car>();
+            var connectionString = "";
+            var context = new DataConnection(new OracleDataProvider(ProviderName.OracleManaged), connectionString);
+            try
+            {
+                context.CreateTable<Car>();
+            }
+            catch{}
+            
             var fluentMappingBuilder = context.MappingSchema.GetFluentMappingBuilder();
             var carBuilder = fluentMappingBuilder.Entity<Car>();
             carBuilder.Property(x => x.Id).IsPrimaryKey();
             var carTable = context.GetTable<Car>();
 
-            var query = carTable.Where(x => x.FilterBySpecialString(null)).ToList();
-
-            var lastQuery = context.LastQuery;
+            // Start: This works perfectly
+            var values = new bool?[]{ null, false, true };
+            var sqlResults = new List<string>();
+            foreach(var value in values)
+            {
+                var query = carTable.Where(x => x.FilterBySpecialString(value)).ToList();
+                sqlResults.Add(context.LastQuery);
+            }
+            // End of first example
+            
+            // Start: This does not work meaning that there is not difference in the resulting SQL statement
+            sqlResults.Clear();
+            
+            carTable.Where(x => x.FilterBySpecialString(null)).ToList();
+            sqlResults.Add(context.LastQuery);
+            
+            carTable.Where(x => x.FilterBySpecialString(true)).ToList();
+            sqlResults.Add(context.LastQuery);
+            
+            carTable.Where(x => x.FilterBySpecialString(false)).ToList();
+            sqlResults.Add(context.LastQuery);
+            
+            // End of failing code
         }
     }
